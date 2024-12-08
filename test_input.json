@@ -1,0 +1,15 @@
+{
+  "input": {
+    "workflow": "ComfyUI workflow exported as API.",
+    "images": [
+      {
+        "name": "butthole",
+        "image": "base64encoded string"
+      },
+      {
+        "name": "asshole",
+        "image": "base64encoded string"
+      }
+    ]
+  }
+}
