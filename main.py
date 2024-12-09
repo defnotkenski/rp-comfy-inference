@@ -103,8 +103,8 @@ def validate_job_input(job_input):
             return None, "Job input is not valid JSON."
 
     # Validate workflow in job input.
-    hf_lora = job_input["hf_lora"]
-    hyperparams = job_input["hyperparams"]
+    hf_lora = job_input["input"]["hf_lora"]
+    hyperparams = job_input["input"]["hyperparams"]
 
     if hf_lora or hyperparams is None:
         return None, "Need to provide both hf_lora and hyperparams in the request."
