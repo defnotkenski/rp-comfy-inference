@@ -61,8 +61,10 @@ def check_server(url: str, attempts: int = 10, delay: int = 500):
     """
 
     for i in range(attempts):
+        print(f"Attemp {i}")
+
         try:
-            server_res = requests.get(f"http://{url}")
+            server_res = requests.get(url)
 
             # If the status code is 200, the server is live and running.
             if server_res.status_code == 200:
