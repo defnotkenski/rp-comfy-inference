@@ -1,7 +1,7 @@
 {
   "input": {
-    "lora_url": "url of lora.",
-    "parameters": {
+    "hf_lora": "ballsack.safetensors",
+    "hyperparams": {
       "batch_number": 40
     }
   }

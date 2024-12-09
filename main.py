@@ -103,20 +103,14 @@ def validate_job_input(job_input):
             return None, "Job input is not valid JSON."
 
     # Validate workflow in job input.
-    workflow = job_input["workflow"]
+    hf_lora = job_input["hf_lora"]
+    hyperparams = job_input["hyperparams"]
 
-    if workflow is None:
-        return None, "Workflow is not provided."
-
-    # Validate images in job input, if provided.
-    images = job_input["images"]
-
-    if images is not None:
-        if not isinstance(images, list) or not all("name" in image and "image" in image for image in images):
-            return None, "Images must be a list with the properties: name and image."
+    if hf_lora or hyperparams is None:
+        return None, "Need to provide both hf_lora and hyperparams in the request."
 
     # Return validated data with no error.
-    return {"workflow": workflow, "images": images}, None
+    return {"hf_lora": hf_lora, "hyperparams": hyperparams}, None
 
 
 def handler(job):
@@ -128,8 +122,8 @@ def handler(job):
         return {"error": error}
 
     # Extract the validated data.
-    # workflow = validated_data["workflow"]
-    # images = validated_data["images"]
+    hf_lora = validated_data["hf_lora"]
+    hyperparams = validated_data["hyperparams"]
 
     # Check if ComfyUI API server is live.
     check_server(f"http:{COMFY_API_HOST}", COMFY_API_MAX_ATTEMPTS, COMFY_API_MAX_DELAY)
