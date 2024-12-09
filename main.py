@@ -62,7 +62,7 @@ def check_server(url: str, attempts: int = 10, delay: int = 500):
 
     for i in range(attempts):
         try:
-            server_res = requests.get(url)
+            server_res = requests.get(f"http://{url}")
 
             # If the status code is 200, the server is live and running.
             if server_res.status_code == 200:
@@ -78,6 +78,7 @@ def check_server(url: str, attempts: int = 10, delay: int = 500):
     # If we are getting a status code other than 200 and no exceptions, there is failed connection.
     print(f"Failed to connect to ComfyUI server at {url} after {attempts} attempts.")
     return False
+
 
 def validate_job_input(job_input):
     """
@@ -120,6 +121,8 @@ def handler(job):
     validated_data, error = validate_job_input(job_input)
     if error:
         return {"error": error}
+
+    print("Input data validated.")
 
     # Extract the validated data.
     hf_lora = validated_data["hf_lora"]
