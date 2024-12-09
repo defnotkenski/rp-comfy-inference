@@ -134,6 +134,8 @@ def handler(job):
     # Check if ComfyUI API server is live.
     check_server(f"http:{COMFY_API_HOST}", COMFY_API_MAX_ATTEMPTS, COMFY_API_MAX_DELAY)
 
+    return {"status": f"Breakpoint: Server check succeeded."}
+
     # Grab the workflow and queue it.
     wf_path = curr_dir.joinpath("workflows", COMFY_WORKFLOW_FILE_NAME)
     with open(wf_path, "r") as wf_file:
