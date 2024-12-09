@@ -107,8 +107,7 @@ def validate_job_input(job_input):
     hf_lora = job_input["hf_lora"]
     hyperparams = job_input["hyperparams"]
 
-    if hf_lora or hyperparams is None:
-        print(f"hf_lora: {hf_lora}\nhyperparams: {hyperparams}")
+    if hf_lora is None or hyperparams is None:
         return None, "Need to provide both hf_lora and hyperparams in the request."
 
     # Return validated data with no error.
