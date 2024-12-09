@@ -13,9 +13,9 @@ COMFY_WORKFLOW_FILE_NAME = "example_workflow-api.json"
 # Host where API server is running.
 COMFY_API_HOST = "127.0.0.1:8188"
 # Max attempts to connect to host.
-COMFY_API_MAX_ATTEMPTS = 500
+COMFY_API_MAX_ATTEMPTS = 10
 # Max delay between attempts to connect to host.
-COMFY_API_MAX_DELAY = 50
+COMFY_API_MAX_DELAY = 2
 
 def get_history(prompt_id: str):
     """
@@ -47,7 +47,7 @@ def queue_workflow(workflow: dict):
     return json.loads(urllib.request.urlopen(req).read())
 
 
-def check_server(url: str, attempts: int = 10, delay: int = 500):
+def check_server(url: str, attempts: int = 10, delay: int = 2):
     """
     Checks to see if the ComfyUI API server is live.
 
@@ -61,7 +61,7 @@ def check_server(url: str, attempts: int = 10, delay: int = 500):
     """
 
     for i in range(attempts):
-        print(f"Attemp {i}")
+        print(f"Attempt {i}")
 
         try:
             server_res = requests.get(url)
@@ -75,7 +75,7 @@ def check_server(url: str, attempts: int = 10, delay: int = 500):
             pass
 
         # Wait for delay before retrying.
-        time.sleep(delay / 1000)
+        time.sleep(delay)
 
     # If we are getting a status code other than 200 and no exceptions, there is failed connection.
     print(f"Failed to connect to ComfyUI server at {url} after {attempts} attempts.")
@@ -131,7 +131,7 @@ def handler(job):
     hyperparams = validated_data["hyperparams"]
 
     # Check if ComfyUI API server is live.
-    check_server(f"http:{COMFY_API_HOST}", COMFY_API_MAX_ATTEMPTS, COMFY_API_MAX_DELAY)
+    check_server(f"http://{COMFY_API_HOST}", COMFY_API_MAX_ATTEMPTS, COMFY_API_MAX_DELAY)
 
     return {"status": f"Breakpoint: Server check succeeded."}
 
