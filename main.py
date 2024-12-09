@@ -1,14 +1,51 @@
 import time
+import urllib.request
+
 import runpod
 import json
 import requests
+from pathlib import Path
 
+# Path object of dir. where script is ran.
+curr_dir = Path.cwd()
+# ComfyUI workflow to be used in this script.
+COMFY_WORKFLOW_FILE_NAME = "example_workflow-api.json"
 # Host where API server is running.
 COMFY_API_HOST = "127.0.0.1:8188"
 # Max attempts to connect to host.
 COMFY_API_MAX_ATTEMPTS = 500
 # Max delay between attempts to connect to host.
 COMFY_API_MAX_DELAY = 50
+
+def get_history(prompt_id: str):
+    """
+    Retrieve the history given the prompt_id.
+
+    args:
+        prompt_id (str): The ID of the prompt of which to retrieve history.
+
+    Returns:
+        dict: The history of the prompt, containing all of the results.
+    """
+    with urllib.request.urlopen(f"http://{COMFY_API_HOST}/history/{prompt_id}") as response:
+        return json.loads(response.read())
+
+
+def queue_workflow(workflow: dict):
+    """
+    Queue workflow to be sent to and processed by the ComfyUI API server.
+
+    args:
+        workflow (dict): A dictionary containing the workflow to be processed.
+
+    Returns:
+        dict: JSON response from ComfyUI after sent.
+    """
+    data = json.dumps({"prompt": workflow}).encode("utf-8")
+    req = urllib.request.Request(f"http://{COMFY_API_HOST}/prompt", data=data)
+
+    return json.loads(urllib.request.urlopen(req).read())
+
 
 def check_server(url: str, attempts: int = 10, delay: int = 500):
     """
@@ -91,11 +128,41 @@ def handler(job):
         return {"error": error}
 
     # Extract the validated data.
-    workflow = validated_data["workflow"]
-    images = validated_data["images"]
+    # workflow = validated_data["workflow"]
+    # images = validated_data["images"]
 
     # Check if ComfyUI API server is live.
     check_server(f"http:{COMFY_API_HOST}", COMFY_API_MAX_ATTEMPTS, COMFY_API_MAX_DELAY)
+
+    # Grab the workflow and queue it.
+    wf_path = curr_dir.joinpath("workflows", COMFY_WORKFLOW_FILE_NAME)
+    with open(wf_path, "r") as wf_file:
+        workflow = json.load(wf_file)
+
+    try:
+        queued_workflow = queue_workflow(workflow=workflow)
+        prompt_id = queued_workflow["prompt_id"]
+
+        print(f"Queued workflow with a returned ID of: {prompt_id}")
+    except Exception as e:
+        return {"error": f"Error queuing workflow: {str(e)}"}
+
+    # Poll for completion.
+    current_retry = 0
+    try:
+        while current_retry < COMFY_API_MAX_ATTEMPTS:
+            history = get_history(prompt_id=prompt_id)
+
+            if prompt_id in history and history[prompt_id].get("outputs"):
+                break
+            else:
+                time.sleep(COMFY_API_MAX_DELAY / 1000)
+                current_retry += 1
+
+        else:
+            return {"error": f"Exceeded the maximum number of retries."}
+    except Exception as e:
+        return {"error": f"Error waiting for image generation: {str(e)}"}
 
     return
 
