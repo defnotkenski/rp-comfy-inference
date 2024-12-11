@@ -44,6 +44,7 @@ def queue_workflow(workflow: dict):
     data = json.dumps({"prompt": workflow}).encode("utf-8")
     req = urllib.request.Request(f"http://{COMFY_API_HOST}/prompt", data=data)
 
+    print({"response": urllib.request.urlopen(req).read()})
     return json.loads(urllib.request.urlopen(req).read())
 
 
@@ -133,8 +134,6 @@ def handler(job):
     # Check if ComfyUI API server is live.
     check_server(f"http://{COMFY_API_HOST}", COMFY_API_MAX_ATTEMPTS, COMFY_API_MAX_DELAY)
 
-    return {"status": f"Breakpoint: Server check succeeded."}
-
     # Grab the workflow and queue it.
     wf_path = curr_dir.joinpath("workflows", COMFY_WORKFLOW_FILE_NAME)
     with open(wf_path, "r") as wf_file:
@@ -147,6 +146,8 @@ def handler(job):
         print(f"Queued workflow with a returned ID of: {prompt_id}")
     except Exception as e:
         return {"error": f"Error queuing workflow: {str(e)}"}
+
+    return {"status": "Breakpoint. Successfully queued workflow."}
 
     # Poll for completion.
     current_retry = 0
