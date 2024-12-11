@@ -27,8 +27,13 @@ def get_history(prompt_id: str):
     Returns:
         dict: The history of the prompt, containing all of the results.
     """
-    with urllib.request.urlopen(f"http://{COMFY_API_HOST}/history/{prompt_id}") as response:
-        return json.loads(response.read())
+    # with urllib.request.urlopen(f"http://{COMFY_API_HOST}/history/{prompt_id}") as response:
+    #     return json.loads(response.read())
+
+    req = requests.get(f"http://{COMFY_API_HOST}/history/{prompt_id}")
+    parsed_req = req.json()
+
+    return parsed_req
 
 
 def queue_workflow(workflow: dict):
@@ -43,13 +48,12 @@ def queue_workflow(workflow: dict):
     """
     data = json.dumps({"prompt": workflow}).encode("utf-8")
 
-    # req = urllib.request.Request(f"http://{COMFY_API_HOST}/prompt", data=data)
     req = requests.post(f"http://{COMFY_API_HOST}/prompt", data=data)
+    parsed_req = req.json()
 
-    # return json.loads(urllib.request.urlopen(req).read())
-    print(req.json())
+    print(parsed_req)
 
-    return req.json()
+    return parsed_req
 
 
 def check_server(url: str, attempts: int = 10, delay: int = 2):
