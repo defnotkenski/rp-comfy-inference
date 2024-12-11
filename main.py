@@ -147,18 +147,21 @@ def handler(job):
     except Exception as e:
         return {"error": f"Error queuing workflow: {str(e)}"}
 
-    return "Breakpoint. Workflow successfully queued."
+    # ====== Poll for completion. ======
 
-    # Poll for completion.
     current_retry = 0
+
     try:
         while current_retry < COMFY_API_MAX_ATTEMPTS:
+            print(current_retry)
+
             history = get_history(prompt_id=prompt_id)
 
             if prompt_id in history and history[prompt_id].get("outputs"):
+                print(f"Image generation complete. Terminating polling.")
                 break
             else:
-                time.sleep(COMFY_API_MAX_DELAY / 1000)
+                time.sleep(COMFY_API_MAX_DELAY)
                 current_retry += 1
 
         else:
@@ -166,7 +169,7 @@ def handler(job):
     except Exception as e:
         return {"error": f"Error waiting for image generation: {str(e)}"}
 
-    return
+    return "Breakpoint. Polling complete, image finished generating."
 
 if __name__ == '__main__':
     runpod.serverless.start({"handler": handler})
