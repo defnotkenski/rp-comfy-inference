@@ -44,7 +44,7 @@ def queue_workflow(workflow: dict):
     data = json.dumps({"prompt": workflow}).encode("utf-8")
     req = urllib.request.Request(f"http://{COMFY_API_HOST}/prompt", data=data)
 
-    print({"response": urllib.request.urlopen(req).read()})
+    print(urllib.request.urlopen(req).read())
     return json.loads(urllib.request.urlopen(req).read())
 
 
@@ -147,7 +147,7 @@ def handler(job):
     except Exception as e:
         return {"error": f"Error queuing workflow: {str(e)}"}
 
-    return {"status": "Breakpoint. Successfully queued workflow."}
+    return "Breakpoint. Workflow successfully queued."
 
     # Poll for completion.
     current_retry = 0
