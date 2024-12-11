@@ -42,10 +42,14 @@ def queue_workflow(workflow: dict):
         dict: JSON response from ComfyUI after sent.
     """
     data = json.dumps({"prompt": workflow}).encode("utf-8")
-    req = urllib.request.Request(f"http://{COMFY_API_HOST}/prompt", data=data)
 
-    print(urllib.request.urlopen(req).read())
-    return json.loads(urllib.request.urlopen(req).read())
+    # req = urllib.request.Request(f"http://{COMFY_API_HOST}/prompt", data=data)
+    req = requests.post(f"http://{COMFY_API_HOST}/prompt", data=data)
+
+    # return json.loads(urllib.request.urlopen(req).read())
+    print(req.json())
+
+    return req.json()
 
 
 def check_server(url: str, attempts: int = 10, delay: int = 2):
@@ -120,21 +124,23 @@ def validate_job_input(job_input):
 def handler(job):
     job_input = job['input']
 
-    # Make sure the job input is valid.
+    # ====== Make sure the job input is valid. ======
+
     validated_data, error = validate_job_input(job_input)
     if error:
         return {"error": error}
 
     print("Input data validated.")
 
-    # Extract the validated data.
     hf_lora = validated_data["hf_lora"]
     hyperparams = validated_data["hyperparams"]
 
-    # Check if ComfyUI API server is live.
+    # ====== Check if ComfyUI API server is live. ======
+
     check_server(f"http://{COMFY_API_HOST}", COMFY_API_MAX_ATTEMPTS, COMFY_API_MAX_DELAY)
 
-    # Grab the workflow and queue it.
+    # ====== Grab the workflow and queue it. ======
+
     wf_path = curr_dir.joinpath("workflows", COMFY_WORKFLOW_FILE_NAME)
     with open(wf_path, "r") as wf_file:
         workflow = json.load(wf_file)
@@ -155,11 +161,7 @@ def handler(job):
         while current_retry < COMFY_API_MAX_ATTEMPTS:
             history = get_history(prompt_id=prompt_id)
 
-            if current_retry == 1:
-                print(history)
-
             if prompt_id in history and history[prompt_id].get("outputs"):
-                print(f"Image generation complete. Terminating polling.")
                 break
             else:
                 time.sleep(COMFY_API_MAX_DELAY)
