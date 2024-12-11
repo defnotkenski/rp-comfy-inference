@@ -153,9 +153,10 @@ def handler(job):
 
     try:
         while current_retry < COMFY_API_MAX_ATTEMPTS:
-            print(current_retry)
-
             history = get_history(prompt_id=prompt_id)
+
+            if current_retry == 1:
+                print(history)
 
             if prompt_id in history and history[prompt_id].get("outputs"):
                 print(f"Image generation complete. Terminating polling.")
