@@ -13,9 +13,25 @@ COMFY_WORKFLOW_FILE_NAME = "example_workflow-api.json"
 # Host where API server is running.
 COMFY_API_HOST = "127.0.0.1:8188"
 # Max attempts to connect to host.
-COMFY_API_MAX_ATTEMPTS = 10
+COMFY_API_MAX_ATTEMPTS = 100
 # Max delay between attempts to connect to host.
-COMFY_API_MAX_DELAY = 2
+COMFY_API_MAX_DELAY = 5
+
+def process_output_images(outputs: dict):
+    """
+    Grab the outputs and determine how to process the image for return.
+
+    args:
+        todo.
+
+    returns:
+        todo.
+    """
+    output_images = ""
+
+    for node_id, node_output in outputs.items():
+        print(node_id, node_output)
+
 
 def get_history(prompt_id: str):
     """
@@ -176,7 +192,9 @@ def handler(job):
     except Exception as e:
         return {"error": f"Error waiting for image generation: {str(e)}"}
 
-    return "Breakpoint. Polling complete, image finished generating."
+    # return "Breakpoint. Polling complete, image finished generating."
+
+    process_results = process_output_images(outputs=history[prompt_id].get("outputs"))
 
 if __name__ == '__main__':
     runpod.serverless.start({"handler": handler})
