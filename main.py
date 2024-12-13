@@ -1,6 +1,4 @@
 import time
-import urllib.request
-
 import runpod
 import json
 import requests
@@ -30,7 +28,13 @@ def process_output_images(outputs: dict):
     output_images = ""
 
     for node_id, node_output in outputs.items():
-        print(node_id, node_output)
+        print(f"✨{node_id}, {node_output}")
+
+        if "images" in node_output:
+            for image in node_output["images"]:
+                output_images = Path(image["subfolder"]) / image["filename"]
+
+    print(f"✨Output images path: {output_images}")
 
 
 def get_history(prompt_id: str):
