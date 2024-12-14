@@ -1,10 +1,16 @@
 import os
+
+import huggingface_hub
+from huggingface_hub import HfApi
 import time
 import runpod
 import json
 import requests
 from pathlib import Path
 
+hf_api = HfApi(token=os.environ["HF_TOKEN"])
+# Repo in HuggingFace to upload outputs to.
+HF_REPO_UPLOAD = "notkenski/inferences"
 # Path object of dir. where script is ran.
 curr_dir = Path.cwd()
 # ComfyUI workflow to be used in this script.
@@ -39,6 +45,23 @@ def process_output_images(outputs: dict):
 
     local_images_path = COMFY_OUTPUT_PATH / output_images
     print(f"✨ Local images path: {local_images_path}")
+
+    if local_images_path.exists():
+        try:
+            hf_api.upload_file(
+                path_or_fileobj=local_images_path,
+                path_in_repo=local_images_path.name,
+                repo_id=HF_REPO_UPLOAD
+            )
+            print(f"🦖 Successfully uploaded to HuggingFace.")
+
+            return {"status": "success", "message": f"Successfully uploaded output to HuggingFace."}
+        except Exception as e:
+            return {"status": "error", "message": f"Error uploading to HF: {e}"}
+
+    else:
+        print(f"🦖 The image does not exist in the output folder at: {local_images_path}")
+        return {"status": "error", "message": f"The image does not exist in the output folder at: {local_images_path}"}
 
 
 def get_history(prompt_id: str):
@@ -200,9 +223,14 @@ def handler(job):
     except Exception as e:
         return {"error": f"Error waiting for image generation: {str(e)}"}
 
-    # return "Breakpoint. Polling complete, image finished generating."
-
     process_results = process_output_images(outputs=history[prompt_id].get("outputs"))
+
+    job_results = {
+        **process_results,
+        "refresh_worker": "true"
+    }
+
+    return job_results
 
 if __name__ == '__main__':
     runpod.serverless.start({"handler": handler})
