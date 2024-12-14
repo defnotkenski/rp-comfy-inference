@@ -181,7 +181,7 @@ def handler(job):
     if error:
         return {"error": error}
 
-    print("Input data validated.")
+    print("✨ Input data validated.")
 
     hf_lora = validated_data["hf_lora"]
     hyperparams = validated_data["hyperparams"]
@@ -200,9 +200,9 @@ def handler(job):
         queued_workflow = queue_workflow(workflow=workflow)
         prompt_id = queued_workflow["prompt_id"]
 
-        print(f"Queued workflow with a returned ID of: {prompt_id}")
+        print(f"✨ Queued workflow with a returned ID of: {prompt_id}")
     except Exception as e:
-        return {"error": f"Error queuing workflow: {str(e)}"}
+        return {"status": "error", "message": f"Error queuing workflow: {str(e)}"}
 
     # ====== Poll for completion. ======
 
@@ -219,15 +219,15 @@ def handler(job):
                 current_retry += 1
 
         else:
-            return {"error": f"Exceeded the maximum number of retries."}
+            return {"status": "error", "message": f"Exceeded the maximum number of retries."}
     except Exception as e:
-        return {"error": f"Error waiting for image generation: {str(e)}"}
+        return {"status": "error", "message": f"Error waiting for image generation: {str(e)}"}
 
     process_results = process_output_images(outputs=history[prompt_id].get("outputs"))
 
     job_results = {
         **process_results,
-        "refresh_worker": "true"
+        "refresh_worker": True
     }
 
     return job_results
