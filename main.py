@@ -1,6 +1,4 @@
 import os
-
-import huggingface_hub
 from huggingface_hub import HfApi
 import time
 import runpod
@@ -9,6 +7,7 @@ import requests
 from pathlib import Path
 
 hf_api = HfApi(token=os.environ["HF_TOKEN"])
+
 # Repo in HuggingFace to upload outputs to.
 HF_REPO_UPLOAD = "notkenski/inferences"
 # Path object of dir. where script is ran.
