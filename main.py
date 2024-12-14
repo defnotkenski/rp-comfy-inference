@@ -1,3 +1,4 @@
+import os
 import time
 import runpod
 import json
@@ -14,6 +15,8 @@ COMFY_API_HOST = "127.0.0.1:8188"
 COMFY_API_MAX_ATTEMPTS = 100
 # Max delay between attempts to connect to host.
 COMFY_API_MAX_DELAY = 5
+# Output path for ComfyUI images.
+COMFY_OUTPUT_PATH = Path("comfyui") / "output"
 
 def process_output_images(outputs: dict):
     """
@@ -28,13 +31,14 @@ def process_output_images(outputs: dict):
     output_images = ""
 
     for node_id, node_output in outputs.items():
-        print(f"✨{node_id}, {node_output}")
+        # print(f"✨ {node_id}, {node_output}")
 
         if "images" in node_output:
             for image in node_output["images"]:
                 output_images = Path(image["subfolder"]) / image["filename"]
 
-    print(f"✨Output images path: {output_images}")
+    local_images_path = COMFY_OUTPUT_PATH / output_images
+    print(f"✨ Local images path: {local_images_path}")
 
 
 def get_history(prompt_id: str):
