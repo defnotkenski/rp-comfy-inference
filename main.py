@@ -23,6 +23,27 @@ COMFY_API_MAX_DELAY = 5
 # Output path for ComfyUI images.
 COMFY_OUTPUT_PATH = Path("comfyui") / "output"
 
+def mutate_workflow(hyperparams: dict, lora: str = ""):
+    """
+    Mutates the original workflow template and returns a modified dict.
+    """
+    wf_path = curr_dir.joinpath("workflows", COMFY_WORKFLOW_FILE_NAME)
+
+    with open(wf_path, "r") as wf_file:
+        parsed_workflow = json.load(wf_file)
+
+        original_seed = parsed_workflow["25"]["inputs"]["noise_seed"]
+        print(f"✨ Original seed: {original_seed}")
+
+    # Mutate seed.
+    parsed_workflow["25"]["inputs"]["noise_seed"] = hyperparams["noise_seed"]
+
+    modified_seed = parsed_workflow["25"]["inputs"]["noise_seed"]
+    print(f"✨ Modified seed: {modified_seed}")
+
+    return parsed_workflow
+
+
 def process_output_images(outputs: dict):
     """
     Grab the outputs and determine how to process the image for return.
@@ -182,6 +203,7 @@ def handler(job):
 
     print("✨ Input data validated.")
 
+    # TODO later.
     hf_lora = validated_data["hf_lora"]
     hyperparams = validated_data["hyperparams"]
 
@@ -191,12 +213,14 @@ def handler(job):
 
     # ====== Grab the workflow and queue it. ======
 
-    wf_path = curr_dir.joinpath("workflows", COMFY_WORKFLOW_FILE_NAME)
-    with open(wf_path, "r") as wf_file:
-        workflow = json.load(wf_file)
+    # wf_path = curr_dir.joinpath("workflows", COMFY_WORKFLOW_FILE_NAME)
+    # with open(wf_path, "r") as wf_file:
+    #     workflow = json.load(wf_file)
+
+    modified_workflow = mutate_workflow(hyperparams=hyperparams, lora=hf_lora)
 
     try:
-        queued_workflow = queue_workflow(workflow=workflow)
+        queued_workflow = queue_workflow(workflow=modified_workflow)
         prompt_id = queued_workflow["prompt_id"]
 
         print(f"✨ Queued workflow with a returned ID of: {prompt_id}")
