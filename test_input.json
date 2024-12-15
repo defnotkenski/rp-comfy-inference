@@ -2,7 +2,7 @@
   "input": {
     "hf_lora": "ballsack.safetensors",
     "hyperparams": {
-      "batch_number": 40
+      "noise_seed": 40
     }
   }
 }
